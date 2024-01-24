@@ -1,0 +1,9 @@
+Segment Tree
+   i
+2i   2i+1
+
+Each level has double no of nodes as the previous level.
+ex 1+ 2 + 2^2 + 2^3 + 2^4 +....................
+Space complexity : O(n)
+Time to build the seg tree: O(n)
+Query Time: O(log n)
