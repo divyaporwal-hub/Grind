@@ -1,9 +1,131 @@
-Segment Tree
-   i
-2i   2i+1
+Q. You are given an array of n integers. For q queries.
+Queries are of 2 types:
+(i) change (i,v):  Change: a[i] to v
+(ii) min (L,R) : Print minimum in range [L,R) or [L,R-1]
 
-Each level has double no of nodes as the previous level.
-ex 1+ 2 + 2^2 + 2^3 + 2^4 +....................
-Space complexity : O(n)
-Time to build the seg tree: O(n)
-Query Time: O(log n)
+Can u solve it using sparse table ? Time complexity?
+- Yes, but for update, we need to modify the whole sparse table in the worst case.
+It would be approx O(n log n) for 1 update query
+
+Can u solve it using Fenwick tree or Binary Indexed Tree ?
+- Minimum is not reversible. So, we can't use BIT.
+We use segment trees to perform both queries in O(log N).
+
+Link: https://codeforces.com/edu/course/2/lesson/4/1/practice/contest/273169/problem/B
+
+Let's build the segment tree for minimum queries.
+Consider Arr=[2,3,4,1,2,8,7,4]
+
+These elements will be the leaves of segment tree.
+
+We are numbering nodes, starting from root, from 1.
+
+Which node is left child of node i ?
+- 2*i
+
+Which node is right child of node i?
+- 2*i+1
+
+
+
+For visualization, use
+https://csacademy.com/lesson/segment_trees/
+
+For query,
+
+Just start checking from root.
+
+3 cases:
+1. If the interval of nodes is entirely inside the given range, return ans.
+
+2. If interval of node is entirely outside the given range, 
+return infinity (As it should not affect our answer).
+
+3. And if the interval of node is partially inside and partially outside, we call the recursive function for both its children and return the minimum of both of their answers.
+
+
+
+Update
+
+
+First, building segment tree:
+min(min(a,b),c) = min(a,min(b,c))
+[ Associative operation ] 
+
+If we have n elements in array, how many nodes will it take to build the segment tree ?
+- n + n/2 + n/4 + …. 1
+( 1+ 2 + 22+23 + 24 + …. 2ceil(log n) ) = 4*n nodes in segment tree
+
+Q. How many levels are there in the segment tree ?
+- log n
+
+// Array indexing is from 0 to n-1
+// Range [L,R)
+int n; // size of arr
+vector<int> arr;  // original array
+vector<int> seg; // segment array
+
+// Give a size of 4*n+1 to seg[]
+// id = id of node in segment tree
+// [L,R) 
+void build(int id=1, int L=0, int R=n)
+{
+   if(R-L==1)
+   {
+      // Leaf node
+      seg[id]=arr[L];
+      return;
+   }
+   int mid=(L+R)/2;
+   build(2*id, L, mid); // left child
+   build(2*id+1, mid, R); // right child
+   seg[id] = min(seg[id*2], seg[id*2+1]);
+}
+
+Time Complexity: O(n)
+[For each node, we will calculate seg[id] only once. There are total 4*n nodes]
+// In main(), call build()
+// [0,n)
+// Given range is [x,y) 
+const inf=1e9+1;
+int query(int x, int y, int id=1, int L=0, int R=n)
+{
+   if( L>=x && R<=y  ) {
+        // When [L,R) is entirely inside [x,y)
+       return seg[id];
+   }
+  if ( L>=y || R<=x ) {
+      // When [L,R) is entirely outside [x,y)
+       return inf; 
+   }
+    int mid=(l+r)/2;
+    return min(query(x,y,id*2,L,mid ), 
+    query(x,y,id*2+1,mid,R ));
+}
+
+// In main(), cout<<query(2,4);
+// Time complexity: O(log n)
+For every level, there can be maximum 2 nodes which are partially inside given range and partially node.
+There are log2 n levels.
+void modify(int pos, int val, int id=1, int L=0, int R=n)
+{
+   if(R-L==1)
+   {
+       // leaf node
+      arr[pos]=val;
+      seg[id]=val;
+      return;
+   }
+  int mid=(L+R)/2;
+  if(pos<mid) 
+  {
+    modify(pos,val,id*2, L, mid);
+  }
+else {
+    modify(pos,val,id*2+1, mid, R);
+  }
+seg[id]=min(seg[id*2], seg[id*2+1]);
+}
+
+Time Complexity: O(log N)
+Since, we are going to maximum 1 node in each level.
